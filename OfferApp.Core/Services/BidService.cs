@@ -27,35 +27,9 @@ namespace OfferApp.Core.Services
             var bid = GetBid(id);
             _repository.Delete(bid);
         }
+        public IReadOnlyList<BidDto> GetAllBids() => _repository.GetAll().Select(bid => bid.AsDto()).ToList();
 
-        public IReadOnlyList<BidDto> GetAllBids()
-        {
-            var bids = _repository.GetAll();
-            var dtos = new List<BidDto>();
-
-            foreach (var bid in bids)
-            {
-                dtos.Add(bid.AsDto());
-            }
-
-            return dtos;
-        }
-
-        public IReadOnlyList<BidPublishedDto> GetAllPublishedBids()
-        {
-            var bids = _repository.GetAll();
-            var dtos = new List<BidPublishedDto>();
-
-            foreach (var bid in bids)
-            {
-                if (bid.Published)
-                {
-                    dtos.Add(bid.AsPublishedDto());
-                }
-            }
-
-            return dtos;
-        }
+        public IReadOnlyList<BidPublishedDto> GetAllPublishedBids() => _repository.GetAll().Where(bid => bid.Published).Select(bid => bid.AsPublishedDto()).ToList();
 
         public BidDto? GetBidById(int id)
         {
