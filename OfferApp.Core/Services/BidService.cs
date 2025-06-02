@@ -15,30 +15,44 @@ namespace OfferApp.Core.Services
             _repository = repository;
         }
 
-        public BidDto AddBid(BidDto dto)
+        public async Task<BidDto> AddBid(BidDto dto)
         {
             var bid = Bid.Create(dto.Name, dto.Description, dto.FirstPrice);
-            _repository.Add(bid);
+            await _repository.Add(bid);
             return bid.AsDto();
         }
 
-        public void DeleteBid(int id)
+        public async Task DeleteBid(int id)
         {
-            var bid = GetBid(id);
-            _repository.Delete(bid);
-        }
-        public IReadOnlyList<BidDto> GetAllBids() => _repository.GetAll().Select(bid => bid.AsDto()).ToList();
-
-        public IReadOnlyList<BidPublishedDto> GetAllPublishedBids() => _repository.GetAll().Where(bid => bid.Published).Select(bid => bid.AsPublishedDto()).ToList();
-
-        public BidDto? GetBidById(int id)
-        {
-            return _repository.Get(id)?.AsDto();
+            var bid = await GetBid(id);
+            await _repository.Delete(bid);
         }
 
-        public bool Published(int id)
+        public async Task<IReadOnlyList<BidDto>> GetAllBids()
         {
-            var bid = GetBid(id);
+            await Task.CompletedTask;
+            return (await _repository.GetAll())
+                .Select(bid => bid.AsDto())
+                .ToList();
+        }
+
+        public async Task<IReadOnlyList<BidPublishedDto>> GetAllPublishedBids()
+        {
+            await Task.CompletedTask;
+            return (await _repository.GetAll())
+                .Where(bid => bid.Published)
+                .Select(bid => bid.AsPublishedDto())
+                .ToList();
+        }
+
+        public async Task<BidDto?> GetBidById(int id)
+        {
+            return (await _repository.Get(id))?.AsDto();
+        }
+
+        public async Task<bool> Published(int id)
+        {
+            var bid = await GetBid(id);
 
             if (bid.Published)
             {
@@ -46,13 +60,13 @@ namespace OfferApp.Core.Services
             }
 
             bid.Publish();
-            _repository.Update(bid);
+            await _repository.Update(bid);
             return bid.Published;
         }
 
-        public bool Unpublished(int id)
+        public async Task<bool> Unpublished(int id)
         {
-            var bid = GetBid(id);
+            var bid = await GetBid(id);
 
             if (!bid.Published)
             {
@@ -60,31 +74,31 @@ namespace OfferApp.Core.Services
             }
 
             bid.Unpublish();
-            _repository.Update(bid);
+            await _repository.Update(bid);
             return !bid.Published;
         }
 
-        public BidDto UpdateBid(BidDto dto)
+        public async Task<BidDto> UpdateBid(BidDto dto)
         {
-            var bid = GetBid(dto.Id);
+            var bid = await GetBid(dto.Id);
             bid.ChangeName(dto.Name);
             bid.ChangeDescription(dto.Description);
             bid.ChangeFirstPrice(dto.FirstPrice);
-            _repository.Update(bid);
+            await _repository.Update(bid);
             return bid.AsDto();
         }
 
-        public BidPublishedDto BidUp(int id, decimal price)
+        public async Task<BidPublishedDto> BidUp(int id, decimal price)
         {
-            var bid = GetBid(id);
+            var bid = await GetBid(id);
             bid.ChangePrice(price);
-            _repository.Update(bid);
+            await _repository.Update(bid);
             return bid.AsPublishedDto();
         }
 
-        private Bid GetBid(int id)
+        private async Task<Bid> GetBid(int id)
         {
-            var bid = _repository.Get(id);
+            var bid = await _repository.Get(id);
             return bid is null ? throw new OfferException($"Bid with id '{id}' was not found") : bid;
         }
     }

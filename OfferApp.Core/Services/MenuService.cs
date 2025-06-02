@@ -10,15 +10,18 @@ namespace OfferApp.Core.Services
 
         public MenuService(IEnumerable<MenuDto> menuDtos)
         {
-            var menus = new List<Menu>();
-            foreach (var menu in menuDtos)
-            {
-                menus.Add(menu.AsEntity());
-            }
-            _menus = menus;
+            _menus = menuDtos.Select(menu => menu.AsEntity())
+                             .ToList();
         }
 
-        public IEnumerable<MenuDto> GetMenus() => _menus.Select(menu => menu.AsDto());
-        public MenuDto? GetMenuById(int id) => _menus.FirstOrDefault(m => m.Id == id)?.AsDto();
+        public IEnumerable<MenuDto> GetMenus()
+        {
+            return _menus.Select(menu => menu.AsDto());
+        }
+
+        public MenuDto? GetMenuById(int id)
+        {
+            return _menus.FirstOrDefault(m => m.Id == id)?.AsDto();
+        }
     }
 }
